@@ -1,6 +1,7 @@
 <?php namespace kamermans\GuzzleOAuth2\GrantType;
 
 use kamermans\GuzzleOAuth2\TokenData;
+use kamermans\GuzzleOAuth2\Exception\ReauthorizationRequestException;
 
 use GuzzleHttp\Collection;
 use GuzzleHttp\ClientInterface;
@@ -18,18 +19,20 @@ class ClientCredentialsBasicAuth implements GrantTypeInterface
     /** @var Collection Configuration settings */
     protected $config;
 
-    public function __construct(ClientInterface $client, $config)
+    public function __construct(ClientInterface $client = null, $config = null)
     {
         $this->client = $client;
-        $this->config = Collection::fromConfig($config,
-            [
-                'client_secret' => '',
-                'scope' => '',
-            ],
-            [
-                'client_id',
-            ]
-        );
+        if ($config) {
+            $this->config = Collection::fromConfig($config,
+                [
+                    'client_secret' => '',
+                    'scope' => '',
+                ],
+                [
+                    'client_id',
+                ]
+            );
+        }
     }
 
     /**
@@ -37,10 +40,14 @@ class ClientCredentialsBasicAuth implements GrantTypeInterface
      */
     public function getTokenData()
     {
+        if (!$this->client || !$this->config) {
+            throw new ReauthorizationRequestException('No OAuth reauthorization method was set');
+        }
+
         $postBody = [
             'grant_type' => 'client_credentials',
         ];
-        
+
         if ($this->config['scope']) {
             $postBody['scope'] = $this->config['scope'];
         }
