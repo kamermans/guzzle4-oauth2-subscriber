@@ -25,9 +25,7 @@ $oauth->tokenPersistence(function($action, $data) {
 	$persist_file = __DIR__.'/oauth_token.key';
 	switch ($action) {
 		case 'get':
-			if (file_exists($persist_file)) {
-				return unserialize(file_get_contents($persist_file));
-			}
+			return file_exists($persist_file)? unserialize(file_get_contents($persist_file)): false;
 			break;
 		case 'set':
 			file_put_contents($persist_file, serialize($data));
@@ -36,6 +34,7 @@ $oauth->tokenPersistence(function($action, $data) {
 			unlink($persist_file);
 			break;
 	}
+	return true;
 });
 
 $client = new GuzzleHttp\Client();
