@@ -1,6 +1,7 @@
 <?php namespace kamermans\GuzzleOAuth2\GrantType;
 
 use kamermans\GuzzleOAuth2\TokenData;
+use kamermans\GuzzleOAuth2\Signer\ClientCredentials\SignerInterface;
 
 interface GrantTypeInterface
 {
@@ -9,5 +10,5 @@ interface GrantTypeInterface
      *
      * @return TokenData
      */
-    public function getTokenData();
+    public function getTokenData(SignerInterface $clientCredentialsSigner);
 }

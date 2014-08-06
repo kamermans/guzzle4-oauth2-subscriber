@@ -1,6 +1,7 @@
 <?php namespace kamermans\GuzzleOAuth2\GrantType;
 
 use kamermans\GuzzleOAuth2\TokenData;
+use kamermans\GuzzleOAuth2\Signer\ClientCredentials\SignerInterface;
 
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use HWI\Bundle\OAuthBundle\Security\Http\ResourceOwnerMap;
@@ -26,7 +27,7 @@ class HWIOAuthBundleRefreshToken implements GrantTypeInterface
     /**
      * {@inheritdoc}
      */
-    public function getTokenData($refreshToken = null)
+    public function getTokenData(SignerInterface $clientCredentialsSigner, $refreshToken = null)
     {
         $token = $this->securityContext->getToken();
         $resourceName = $token->getResourceOwnerName();

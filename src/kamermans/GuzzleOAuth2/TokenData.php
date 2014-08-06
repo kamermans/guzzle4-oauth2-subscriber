@@ -2,6 +2,11 @@
 
 class TokenData {
 
+	public $accessToken;
+	public $refreshToken;
+	public $expiresIn;
+	public $expires;
+
 	public function __construct(array $data = null) {
 		if ($data) {
 			$this->setFromArray($data);
@@ -34,8 +39,4 @@ class TokenData {
 		return str_replace(' ', '', lcfirst(ucwords(str_replace('_', ' ', $value))));
 	}
 
-	public $accessToken;
-	public $refreshToken;
-	public $expiresIn;
-	public $expires;
 }

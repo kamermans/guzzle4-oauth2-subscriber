@@ -1,6 +1,8 @@
 <?php namespace kamermans\GuzzleOAuth2\GrantType;
 
+use kamermans\GuzzleOAuth2\Utils;
 use kamermans\GuzzleOAuth2\TokenData;
+use kamermans\GuzzleOAuth2\Signer\ClientCredentials\SignerInterface;
 use kamermans\GuzzleOAuth2\Exception\ReauthorizationException;
 
 use GuzzleHttp\Collection;
@@ -39,12 +41,21 @@ class ClientCredentials implements GrantTypeInterface
     /**
      * {@inheritdoc}
      */
-    public function getTokenData()
+    public function getTokenData(SignerInterface $clientCredentialsSigner)
     {
         if (!$this->client || !$this->config) {
             throw new ReauthorizationException('No OAuth reauthorization method was set');
         }
-        $response = $this->client->post(null, ['body' => $this->config->toArray()]);
+        
+        $request = $this->client->createRequest('POST', null);
+        $request->setBody(Utils::arrayToPostBody($this->config));
+        $clientCredentialsSigner->sign(
+            $request, 
+            $this->config['client_id'], 
+            $this->config['client_secret']
+        );
+        $response = $this->client->send($request);
+
         return new TokenData($response->json());
     }
 }

@@ -1,6 +1,10 @@
 <?php namespace kamermans\GuzzleOAuth2;
 
 use kamermans\GuzzleOAuth2\GrantType\GrantTypeInterface;
+use kamermans\GuzzleOAuth2\Signer\AccessToken\SignerInterface as AccessTokenSigner;
+use kamermans\GuzzleOAuth2\Signer\ClientCredentials\SignerInterface as ClientCredentialsSigner;
+use kamermans\GuzzleOAuth2\Signer\AccessToken\BasicAuth as AccessTokenBasicAuth;
+use kamermans\GuzzleOAuth2\Signer\ClientCredentials\BasicAuth as ClientCredentialsBasicAuth;
 use kamermans\GuzzleOAuth2\Exception\AccessTokenRequestException;
 use kamermans\GuzzleOAuth2\Exception\RefreshTokenRequestException;
 
@@ -25,11 +29,9 @@ class OAuth2Subscriber implements SubscriberInterface
     /** @var GrantTypeInterface The grant type implementation used to refresh access tokens */
     protected $refreshTokenGrantType;
 
-    /** @var array An array with the "access_token" and "expires" keys */
-    protected $accessToken;
+    protected $accessTokenSigner;
 
-    /** @var string The refresh token string. **/
-    protected $refreshToken;
+    protected $clientCredentialsSigner;
 
     protected $tokenData;
 
@@ -38,10 +40,27 @@ class OAuth2Subscriber implements SubscriberInterface
     /**
      * Create a new Oauth2 plugin
      */
-    public function __construct(GrantTypeInterface $grantType = null, GrantTypeInterface $refreshTokenGrantType = null)
+    public function __construct(
+                                GrantTypeInterface $grantType = null, 
+                                GrantTypeInterface $refreshTokenGrantType = null,
+                                AccessTokenSigner $clientCredentialsSigner = null,
+                                ClientCredentialsSigner $accessTokenSigner = null
+                                )
     {
         $this->grantType = $grantType;
         $this->refreshTokenGrantType = $refreshTokenGrantType;
+        $this->clientCredentialsSigner = $clientCredentialsSigner?: new ClientCredentialsBasicAuth();
+        $this->accessTokenSigner = $accessTokenSigner?: new AccessTokenBasicAuth();
+    }
+
+    public function setAccessTokenSigner(AccessTokenSigner $signer) 
+    {
+        $this->accessTokenSigner = $signer;
+    }
+
+    public function setClientCredentialsSigner(ClientCredentialsSigner $signer) 
+    {
+        $this->clientCredentialsSigner = $signer;
     }
 
     public function tokenPersistence(callable $callback)
@@ -72,7 +91,7 @@ class OAuth2Subscriber implements SubscriberInterface
         $this->checkTokenData();
 
         if ($this->tokenData->accessToken) {
-            $event->getRequest()->setHeader('Authorization', 'Bearer ' . $this->tokenData->accessToken);
+            $this->accessTokenSigner->sign($event->getRequest(), $this->tokenData->accessToken);
         }
     }
 
@@ -96,7 +115,7 @@ class OAuth2Subscriber implements SubscriberInterface
             $this->acquireAccessToken();
             if ($this->tokenData->accessToken) {
                 $newRequest = clone $event->getRequest();
-                $newRequest->setHeader('Authorization', 'Bearer ' . $this->tokenData->accessToken);
+                $this->accessTokenSigner->sign($newRequest, $this->tokenData->accessToken);
                 $newRequest->setHeader('X-Guzzle-Retry', '1');
                 $event->intercept($newRequest->send());
             }
@@ -180,7 +199,7 @@ class OAuth2Subscriber implements SubscriberInterface
         if ($this->refreshTokenGrantType && $this->tokenData->refreshToken) {
             try {
                 // Get an access token using the stored refresh token.
-                $newTokenData = $this->refreshTokenGrantType->getTokenData($this->tokenData->refreshToken);
+                $newTokenData = $this->refreshTokenGrantType->getTokenData($this->clientCredentialsSigner, $this->tokenData->refreshToken);
             } catch (BadResponseException $e) {
                 // The refresh token has probably expired.
                 $this->tokenData->refreshToken = null;
@@ -192,7 +211,7 @@ class OAuth2Subscriber implements SubscriberInterface
         if ($this->grantType && !isset($newTokenData)) {
             try {
                 // Get a new access token.
-                $newTokenData = $this->grantType->getTokenData();
+                $newTokenData = $this->grantType->getTokenData($this->clientCredentialsSigner);
             } catch (BadResponseException $e) {
                 throw new AccessTokenRequestException("Access token was invalid and attempt to reauthorize failed", $e);
             }
