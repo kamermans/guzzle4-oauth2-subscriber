@@ -1,5 +1,6 @@
 <?php namespace kamermans\GuzzleOAuth2\GrantType;
 
+use kamermans\GuzzleOAuth2\Utils;
 use kamermans\GuzzleOAuth2\TokenData;
 use kamermans\GuzzleOAuth2\Signer\ClientCredentials\SignerInterface;
 use kamermans\GuzzleOAuth2\Exception\ReauthorizationException;
