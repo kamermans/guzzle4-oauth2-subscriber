@@ -118,12 +118,14 @@ class OAuth2Subscriber implements SubscriberInterface
                 $this->accessTokenSigner->sign($newRequest, $this->tokenData->accessToken);
                 $newRequest->setHeader('X-Guzzle-Retry', '1');
                 $event->intercept(
-                    $event->getClient()->send($newRequest));
+                    $event->getClient()->send($newRequest)
+                );
             }
         }
     }
 
-    public function getTokenData() {
+    public function getTokenData()
+    {
         if ($this->tokenData === null) {
             $this->tokenData = new TokenData();
         }
