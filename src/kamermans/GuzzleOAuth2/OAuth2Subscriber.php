@@ -84,7 +84,7 @@ class OAuth2Subscriber implements SubscriberInterface
      *
      * Adds the Authorization header if an access token was found.
      *
-     * @param Event $event Event received
+     * @param BeforeEvent $event Event received
      */
     public function onBefore(BeforeEvent $event)
     {
@@ -101,7 +101,7 @@ class OAuth2Subscriber implements SubscriberInterface
       * Handles unauthorized errors by acquiring a new access token and
       * retrying the request.
       *
-      * @param Event $event Event received
+      * @param ErrorEvent $event Event received
       */
     public function onError(ErrorEvent $event)
     {
@@ -117,7 +117,8 @@ class OAuth2Subscriber implements SubscriberInterface
                 $newRequest = clone $event->getRequest();
                 $this->accessTokenSigner->sign($newRequest, $this->tokenData->accessToken);
                 $newRequest->setHeader('X-Guzzle-Retry', '1');
-                $event->intercept($newRequest->send());
+                $event->intercept(
+                    $event->getClient()->send($newRequest));
             }
         }
     }
