@@ -43,8 +43,8 @@ class OAuth2Subscriber implements SubscriberInterface
     public function __construct(
                                 GrantTypeInterface $grantType = null, 
                                 GrantTypeInterface $refreshTokenGrantType = null,
-                                AccessTokenSigner $clientCredentialsSigner = null,
-                                ClientCredentialsSigner $accessTokenSigner = null
+                                ClientCredentialsSigner $clientCredentialsSigner = null,
+                                AccessTokenSigner $accessTokenSigner = null
                                 )
     {
         $this->grantType = $grantType;
