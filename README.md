@@ -1,7 +1,7 @@
 guzzle-oauth2-subscriber
 ====================
 
-Provides an OAuth2 subscriber for [Guzzle](http://guzzlephp.org/) 4.x.
+Provides an OAuth2 subscriber for [Guzzle](http://guzzlephp.org/) 4.x and 5.x.
 
 # Attribution #
 -----------
