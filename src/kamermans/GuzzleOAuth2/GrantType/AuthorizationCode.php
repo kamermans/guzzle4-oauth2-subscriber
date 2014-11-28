@@ -62,7 +62,7 @@ class AuthorizationCode implements GrantTypeInterface
         }
 
         $request = $this->client->createRequest('POST', null);
-        $request->setBody(Utils::arrayToPostBody($this->config));
+        $request->setBody(Utils::arrayToPostBody(new Collection($postBody)));
         $clientCredentialsSigner->sign(
             $request, 
             $this->config['client_id'], 
