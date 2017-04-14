@@ -1,12 +1,12 @@
 {
     "name": "kamermans/guzzle4-oauth2-subscriber",
-    "description": "OAuth2 authentication and reauthorization for Guzzle 4.x",
+    "description": "OAuth2 authentication and reauthorization for Guzzle 4.x and 5.x",
     "keywords": ["oauth", "guzzle", "oauth2", "guzzle4", "provider", "subscriber"],
     "license": "MIT",
     "require": {
         "php": ">=5.4.0",
         "ext-json": "*",
-        "guzzlehttp/guzzle": "4.*"
+        "guzzlehttp/guzzle": ">=4.0 <6.0"
     },
     "autoload": {
         "psr-0": {
